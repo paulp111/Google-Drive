@@ -13,16 +13,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 //implement
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+model File {
+  id       Int      @id @default(autoincrement())
+  filename String
+  mimetype String
+  path     String
+  createdAt DateTime @default(now())
+  userId   Int       // Make this required again
+  user     User      @relation(fields: [userId], references: [id])
 }
 
-model File {
-  id          Int      @id @default(autoincrement())
-  filename    String
-  mimetype    String
-  path        String
-  createdAt   DateTime @default(now())
+
+model User {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  password String
+  files    File[]
 }

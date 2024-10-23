@@ -2,133 +2,200 @@ const express = require('express');
 const multer = require('multer');
 const { PrismaClient } = require('@prisma/client');
 const path = require('path');
-const fs = require('fs');
-const app = express();
+const session = require('express-session');
 const prisma = new PrismaClient();
 
+const app = express();
+
+// Session configuration
+app.use(session({
+  secret: 'your_secret_key',
+  resave: false,
+  saveUninitialized: true
+}));
+
+// Set view engine to EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Static files
-app.use(express.static(__dirname));
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Middleware to parse form data
 app.use(express.urlencoded({ extended: true }));
 
-// Multer for file uploads
+// Multer configuration for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/');
   },
-  filename: (req, file, cb) => {
+  filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname);
   }
 });
 const upload = multer({ storage });
 
-// Render frontend
+// Middleware to check if the user is logged in
+function requireLogin(req, res, next) {
+  if (!req.session.userId) {
+    res.redirect('/login');
+  } else {
+    next();
+  }
+}
+
+// Route to render home page
 app.get('/', async (req, res) => {
-  const files = await prisma.file.findMany();
-  res.render('index', { files });
+  if (!req.session.userId) {
+    res.render('index', { files: [], message: 'You are not logged in. Please log in to upload or view files.', session: req.session });
+  } else {
+    const files = await prisma.file.findMany({
+      where: { userId: req.session.userId }
+    });
+    res.render('index', { files, message: null, session: req.session });
+  }
 });
 
-// File upload endpoint
-app.post('/upload', upload.single('file'), async (req, res) => {
+
+// Route to handle file uploads
+app.post('/upload', requireLogin, upload.single('file'), async (req, res) => {
   const { file } = req;
+  const userId = req.session.userId;
+
   if (!file) {
     return res.status(400).send('No file uploaded.');
   }
 
-  // Save file details in database
   await prisma.file.create({
     data: {
       filename: file.originalname,
       mimetype: file.mimetype,
-      path: file.path
+      path: file.path,
+      userId: userId
     }
   });
 
   res.redirect('/');
 });
 
-// File rename endpoint
-app.post('/rename/:id', async (req, res) => {
-  const { id } = req.params;
+// Route to handle file renaming
+app.post('/rename/:id', requireLogin, async (req, res) => {
+  const fileId = parseInt(req.params.id);
+  const userId = req.session.userId;
   const { newName } = req.body;
 
-  // Finde die Datei in der Datenbank
   const file = await prisma.file.findUnique({
-    where: { id: parseInt(id) }
+    where: { id: fileId }
   });
 
-  if (!file) {
-    return res.status(404).send('File not found.');
+  if (!file || file.userId !== userId) {
+    return res.status(403).send('You are not authorized to rename this file.');
   }
 
-  // Extrahiere die Dateiendung
-  const fileExtension = path.extname(file.filename);
-  const newFilename = newName + fileExtension;
-  const newPath = 'uploads/' + newFilename;
+  const fileExtension = file.filename.split('.').pop();
+  const updatedFilename = `${newName}.${fileExtension}`;
 
-  // Benenne die Datei im Dateisystem um
-  fs.rename(file.path, newPath, async (err) => {
-    if (err) {
-      return res.status(500).send('Error renaming the file.');
+  await prisma.file.update({
+    where: { id: fileId },
+    data: {
+      filename: updatedFilename
     }
-
-    // Aktualisiere den Dateinamen und den Pfad in der Datenbank
-    await prisma.file.update({
-      where: { id: parseInt(id) },
-      data: { filename: newFilename, path: newPath }
-    });
-
-    res.redirect('/');
   });
+
+  res.redirect('/');
 });
 
-// File delete endpoint
-app.post('/delete/:id', async (req, res) => {
-  const { id } = req.params;
+// Route to handle file deletion
+app.post('/delete/:id', requireLogin, async (req, res) => {
+  const fileId = parseInt(req.params.id);
+  const userId = req.session.userId;
 
   const file = await prisma.file.findUnique({
-    where: { id: parseInt(id) }
+    where: { id: fileId }
   });
 
-  if (!file) {
-    return res.status(404).send('File not found.');
+  if (!file || file.userId !== userId) {
+    return res.status(403).send('You are not authorized to delete this file.');
   }
 
-  // Delete file from filesystem
-  fs.unlink(file.path, async (err) => {
-    if (err) {
-      return res.status(500).send('Error deleting the file.');
-    }
-
-    // Delete file from database
-    await prisma.file.delete({
-      where: { id: parseInt(id) }
-    });
-
-    res.redirect('/');
+  await prisma.file.delete({
+    where: { id: fileId }
   });
+
+  res.redirect('/');
 });
 
-// File download endpoint
-app.get('/download/:id', async (req, res) => {
-  const { id } = req.params;
+// Route to download files
+app.get('/download/:id', requireLogin, async (req, res) => {
+  const fileId = parseInt(req.params.id);
+  const userId = req.session.userId;
 
   const file = await prisma.file.findUnique({
-    where: { id: parseInt(id) }
+    where: { id: fileId }
   });
 
-  if (!file) {
-    return res.status(404).send('File not found.');
+  if (!file || file.userId !== userId) {
+    return res.status(403).send('You are not authorized to download this file.');
   }
 
-  // Send file to the user for download
   res.download(file.path, file.filename);
 });
 
-// Start server
+// Login route
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await prisma.user.findUnique({
+    where: { email }
+  });
+
+  if (!user || user.password !== password) {
+    return res.status(400).send('Invalid credentials.');
+  }
+
+  req.session.userId = user.id;
+  res.redirect('/');
+});
+
+// Sign-up route
+app.get('/sign-up', (req, res) => {
+  res.render('sign-up');
+});
+
+app.post('/sign-up', async (req, res) => {
+  const { email, password } = req.body;
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email }
+  });
+
+  if (existingUser) {
+    return res.status(400).send('User with this email already exists.');
+  }
+
+  const user = await prisma.user.create({
+    data: {
+      email,
+      password
+    }
+  });
+
+  req.session.userId = user.id;
+  res.redirect('/');
+});
+
+// Logout route
+app.post('/logout', (req, res) => {
+  req.session.destroy();
+  res.redirect('/');
+});
+
+// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

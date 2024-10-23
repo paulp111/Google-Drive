@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile</title>
+    <link rel="stylesheet" href="/public/pico.classless.min.css" />
+    <link rel="stylesheet" href="/public/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Profilseite</h1>
+      </header>
+
+      <section>
+        <h2>Benutzerdetails</h2>
+        <p><strong>Name:</strong> <%= user.name %></p>
+        <p><strong>E-Mail:</strong> <%= user.email %></p>
+      </section>
+
+      <section>
+        <h2>Statistiken</h2>
+        <p><strong>Anzahl der hochgeladenen Dateien:</strong> <%= user.files.length %></p>
+        <p><strong>Gesamtgröße der Dateien:</strong> Coming Soon!</p>
+      </section>
+
+      <section>
+        <h2>Hochgeladene Dateien</h2>
+        <ul>
+          <% user.files.forEach(function(file) { %>
+            <li>
+              <strong><%= file.filename %></strong> (<%= file.mimetype %>)
+              <a href="/download/<%= file.id %>">Download</a>
+            </li>
+          <% }); %>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Passwort ändern</h2>
+        <form action="/change-password" method="POST">
+          <label for="currentPassword">Aktuelles Passwort:</label>
+          <input type="password" id="currentPassword" name="currentPassword" required />
+
+          <label for="newPassword">Neues Passwort:</label>
+          <input type="password" id="newPassword" name="newPassword" required />
+
+          <button type="submit">Passwort ändern</button>
+        </form>
+      </section>
+    </div>
+  </body>
+</html>
