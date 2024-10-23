@@ -1,0 +1,53 @@
+.container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+input[type="file"] {
+    margin-bottom: 15px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+}
+
+ul {
+    padding: 0;
+    list-style: none;
+}
+
+ul li {
+    background-color: #f0f0f0;
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 5px;
+}
+.file-details {
+    display: none;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+  }
+
+  .file-item {
+    cursor: pointer;
+  }
+
+  .file-item.active .file-details {
+    display: block;
+  }

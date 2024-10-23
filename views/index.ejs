@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drive App</title>
+    <link rel="stylesheet" href="/public/pico.classless.min.css" />
+    <link rel="stylesheet" href="/public/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Drive - Upload your files</h1>
+
+      <!-- File upload form -->
+      <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" required />
+        <button type="submit">Upload</button>
+      </form>
+
+      <!-- Display uploaded files -->
+      <h2>Uploaded Files</h2>
+      <ul>
+        <% files.forEach(function(file) { %>
+        <li class="file-item" onclick="toggleDetails(this)">
+          <strong><%= file.filename %></strong> (<%= file.mimetype %>)
+          <a href="/download/<%= file.id %>" class="download-link">Download</a>
+          <div class="file-details" onclick="event.stopPropagation();">
+            <!-- Rename form -->
+            <form action="/rename/<%= file.id %>" method="POST">
+              <input type="text" name="newName" placeholder="New name" />
+              <button type="submit">Rename</button>
+            </form>
+            <!-- Delete form -->
+            <form action="/delete/<%= file.id %>" method="POST">
+              <button type="submit">Delete</button>
+            </form>
+          </div>
+        </li>
+        <% }); %>
+      </ul>
+    </div>
+
+    <script>
+      function toggleDetails(item) {
+        item.classList.toggle('active');
+      }
+    </script>
+  </body>
+</html>
