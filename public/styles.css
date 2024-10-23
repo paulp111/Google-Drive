@@ -1,9 +1,13 @@
+  /* 
+  Global css ⸜(｡˃ ᵕ ˂ )⸝♡
+  */
+
 .container {
     max-width: 600px;
     margin: 50px auto;
     padding: 20px;
 }
-/* Container für Profil und Logout */
+
 .navbar {
     display: flex;
     justify-content: flex-end;
@@ -58,3 +62,21 @@ ul li {
   .file-item.active .file-details {
     display: block;
   }
+
+  .delete-btn:hover {
+    background-color: #e74c3c;
+    color: white;
+  }
+
+  .delete-btn {
+    background-color: #e74c3c;
+    color: white;
+  }
+
+  .delete-btn:hover {
+    background-color: #c0392b;
+  }
+
+
+
+

@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Drive App</title>
+    <title>Google Drive</title>
     <link rel="stylesheet" href="/pico.classless.min.css" />
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/styles.css" /> <!-- Global -->
   </head>
   <body>
     <div class="container">
@@ -22,10 +22,23 @@
           <% } %>
         </div>
 
-        <!-- Google Logo links neben dem Text platzieren -->
-        <div class="logo-title">
-          <img src="/logo1.png" alt="Google Logo" class="logo" />
-          <h1>Drive - Upload your files</h1>
+        <!-- Main Content with Text and Image Side by Side -->
+        <div class="main-content">
+          <div class="text-section">
+            <img src="/drivelogo.svg" alt="Google Logo" class="logo" />
+            <h1>Cloud-Speicher leicht gemacht</h1>
+            <p>Einfacher und skalierbarer Cloud-Speicher für Einzelpersonen und Teams aller Größen. Gespeicherte Dateien lassen sich auf jedem Gerät hochladen, öffnen, freigeben und bearbeiten.</p>
+            <!-- Anmelde und Sign-up Buttons -->
+            <div style="display: flex; gap: 10px;">
+              <a href="/login" role="button" class="button primary">Anmelden</a> <!-- Blauer Button -->
+              <a href="/sign-up" role="button" class="button" style="background-color: white; color: #4285f4; border: 1px solid #5F6368;">Sign Up</a> <!-- Weißer Button -->
+            </div>
+          </div>
+
+          <!-- Image Section -->
+          <div class="image-section">
+            <img src="/bg.webp" alt="Background Image" class="bg-image" />
+          </div>
         </div>
       </header>
 
@@ -35,25 +48,38 @@
           <input type="file" name="file" required />
           <button type="submit">Upload</button>
         </form>
-      <% } else { %>
-        <p>Sie sind nicht angemeldet. Bitte melden Sie sich an, um Dateien hochzuladen.</p>
-      <% } %>
 
-      <!-- Display uploaded files -->
-      <h2>Uploaded Files</h2>
-      <ul>
-        <% files.forEach(function(file) { %>
-        <li class="file-item">
-          <strong><%= file.filename %></strong> (<%= file.mimetype %>)
-          <a href="/download/<%= file.id %>" class="download-link">Download</a>
-        </li>
-        <% }); %>
-      </ul>
+        <!-- Display uploaded files (only shown if logged in) -->
+        <h2>Uploaded Files</h2>
+        <ul>
+          <% files.forEach(function(file) { %>
+          <li class="file-item">
+            <strong><%= file.filename %></strong> (<%= file.mimetype %>)
+            <button onclick="toggleDetails(this)">Details anzeigen</button> <!-- Button to toggle details -->
+            <div class="file-details" style="display: none;">
+              <form action="/rename/<%= file.id %>" method="POST">
+                <label for="newName-<%= file.id %>">Umbenennen:</label>
+                <input type="text" id="newName-<%= file.id %>" name="newName" placeholder="Neuer Dateiname" required />
+                <button type="submit">Umbenennen</button>
+              </form>
+              
+              <form action="/delete/<%= file.id %>" method="POST" onsubmit="return confirm('Sind Sie sicher, dass Sie diese Datei löschen möchten?');">
+                <button type="submit" class="delete-btn">Löschen</button>
+              </form>
+
+              <a href="/download/<%= file.id %>" class="download-link">Download</a>
+            </div>
+          </li>
+          <% }); %>
+        </ul>
+      <% } %>
     </div>
 
     <script>
-      function toggleDetails(item) {
-        item.classList.toggle('active');
+      function toggleDetails(button) {
+        const details = button.nextElementSibling;
+        details.style.display = details.style.display === "none" ? "block" : "none";
+        button.textContent = details.style.display === "none" ? "Details anzeigen" : "Details verbergen";
       }
     </script>
   </body>
