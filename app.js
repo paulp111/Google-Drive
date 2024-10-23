@@ -3,6 +3,7 @@ const multer = require('multer');
 const { PrismaClient } = require('@prisma/client');
 const path = require('path');
 const session = require('express-session');
+const fs = require('fs');  // Für das Löschen von Dateien
 const prisma = new PrismaClient();
 
 const app = express();
@@ -55,7 +56,6 @@ app.get('/', async (req, res) => {
     res.render('index', { files, message: null, session: req.session });
   }
 });
-
 
 // Route to handle file uploads
 app.post('/upload', requireLogin, upload.single('file'), async (req, res) => {
@@ -141,6 +141,75 @@ app.get('/download/:id', requireLogin, async (req, res) => {
   res.download(file.path, file.filename);
 });
 
+// Profile route
+app.get('/profile', requireLogin, async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.session.userId },
+    include: {
+      files: true
+    }
+  });
+
+  res.render('profile', { user });
+});
+
+// Route to change the password
+app.post('/change-password', requireLogin, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = req.session.userId;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId }
+  });
+
+  if (user.password !== currentPassword) {
+    return res.status(400).send('Das aktuelle Passwort ist nicht korrekt.');
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      password: newPassword
+    }
+  });
+
+  res.redirect('/profile');
+});
+
+// Route to delete the user account and all associated data
+app.post('/delete-account', requireLogin, async (req, res) => {
+  const userId = req.session.userId;
+
+  // Delete user files from the database and filesystem
+  const userFiles = await prisma.file.findMany({
+    where: { userId: userId }
+  });
+
+  // Delete files from filesystem
+  userFiles.forEach(file => {
+    fs.unlink(file.path, (err) => {
+      if (err) {
+        console.error(`Error deleting file ${file.path}:`, err);
+      }
+    });
+  });
+
+  // Delete files from the database
+  await prisma.file.deleteMany({
+    where: { userId: userId }
+  });
+
+  // Delete the user account
+  await prisma.user.delete({
+    where: { id: userId }
+  });
+
+  // Destroy session and log out the user
+  req.session.destroy();
+
+  res.redirect('/sign-up');
+});
+
 // Login route
 app.get('/login', (req, res) => {
   res.render('login');
@@ -167,7 +236,7 @@ app.get('/sign-up', (req, res) => {
 });
 
 app.post('/sign-up', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, name } = req.body;
 
   const existingUser = await prisma.user.findUnique({
     where: { email }
@@ -180,7 +249,8 @@ app.post('/sign-up', async (req, res) => {
   const user = await prisma.user.create({
     data: {
       email,
-      password
+      password,
+      name
     }
   });
 

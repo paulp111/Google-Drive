@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile</title>
-    <link rel="stylesheet" href="/public/pico.classless.min.css" />
-    <link rel="stylesheet" href="/public/styles.css" />
+    <title>Profilseite</title>
+    <link rel="stylesheet" href="/pico.classless.min.css" />
+    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <div class="container">
@@ -26,18 +26,6 @@
       </section>
 
       <section>
-        <h2>Hochgeladene Dateien</h2>
-        <ul>
-          <% user.files.forEach(function(file) { %>
-            <li>
-              <strong><%= file.filename %></strong> (<%= file.mimetype %>)
-              <a href="/download/<%= file.id %>">Download</a>
-            </li>
-          <% }); %>
-        </ul>
-      </section>
-
-      <section>
         <h2>Passwort ändern</h2>
         <form action="/change-password" method="POST">
           <label for="currentPassword">Aktuelles Passwort:</label>
@@ -47,6 +35,13 @@
           <input type="password" id="newPassword" name="newPassword" required />
 
           <button type="submit">Passwort ändern</button>
+        </form>
+      </section>
+
+      <section>
+        <h2>Konto löschen</h2>
+        <form action="/delete-account" method="POST" onsubmit="return confirm('Sind Sie sicher, dass Sie Ihr Konto und alle Daten löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden!');">
+          <button type="submit" class="delete-btn">Konto löschen</button>
         </form>
       </section>
     </div>

@@ -10,48 +10,40 @@
   <body>
     <div class="container">
       <header>
+        <div class="navbar">
+          <% if (!session.userId) { %>
+            <a href="/login">Login</a>
+            <a href="/sign-up">Sign Up</a>
+          <% } else { %>
+            <a href="/profile">Profil</a>
+            <form action="/logout" method="POST" style="display: inline;">
+              <a href="#" onclick="this.closest('form').submit()">Logout</a>
+            </form>
+          <% } %>
+        </div>
         <h1>Drive - Upload your files</h1>
-        <% if (!session.userId) { %>
-          <a href="/login" class="button">Login</a>
-          <a href="/sign-up" class="button">Sign Up</a>
-        <% } else { %>
-          <form action="/logout" method="POST">
-            <button type="submit">Logout</button>
-          </form>
-        <% } %>
       </header>
 
-      <% if (message) { %>
-        <p><%= message %></p>
-      <% } else { %>
-        <!-- File upload form -->
+      <!-- File upload form (only shown if logged in) -->
+      <% if (session.userId) { %>
         <form action="/upload" method="POST" enctype="multipart/form-data">
           <input type="file" name="file" required />
           <button type="submit">Upload</button>
         </form>
-
-        <!-- Display uploaded files -->
-        <h2>Uploaded Files</h2>
-        <ul>
-          <% files.forEach(function(file) { %>
-          <li class="file-item">
-            <strong><%= file.filename %></strong> (<%= file.mimetype %>)
-            <a href="/download/<%= file.id %>" class="download-link">Download</a>
-            <div class="file-details">
-              <!-- Rename form -->
-              <form action="/rename/<%= file.id %>" method="POST">
-                <input type="text" name="newName" placeholder="New name" />
-                <button type="submit">Rename</button>
-              </form>
-              <!-- Delete form -->
-              <form action="/delete/<%= file.id %>" method="POST">
-                <button type="submit">Delete</button>
-              </form>
-            </div>
-          </li>
-          <% }); %>
-        </ul>
+      <% } else { %>
+        <p>Sie sind nicht angemeldet. Bitte melden Sie sich an, um Dateien hochzuladen.</p>
       <% } %>
+
+      <!-- Display uploaded files -->
+      <h2>Uploaded Files</h2>
+      <ul>
+        <% files.forEach(function(file) { %>
+        <li class="file-item">
+          <strong><%= file.filename %></strong> (<%= file.mimetype %>)
+          <a href="/download/<%= file.id %>" class="download-link">Download</a>
+        </li>
+        <% }); %>
+      </ul>
     </div>
 
     <script>
