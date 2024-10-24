@@ -2,7 +2,7 @@
   Global css ⸜(｡˃ ᵕ ˂ )⸝♡
   */
 
-.container {
+  .container {
     max-width: 600px;
     margin: 50px auto;
     padding: 20px;
@@ -79,4 +79,183 @@ ul li {
 
 
 
+/* HEADER */
+.header-navbar {
+  display: flex;
+  max-width: none; /* Überschreibt die Begrenzung der maximalen Breite */
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px; /* Padding auf beiden Seiten, um den Inhalt etwas abzurücken */
+  border-bottom: 2px solid; /* Größerer Rand, um den Farbverlauf besser zur Geltung zu bringen */
+  border-image: linear-gradient(to right, blue, violet, pink) 1; /* Gradient von Rot nach Violett */
+  margin-bottom: 20px; /* Abstand zwischen dem Trennstrich und den Buttons */
+  width: 100%;
+  background-color: white; /* Sauberer, weißer Hintergrund */
+}
 
+
+.header-navbar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 100%; /* Keine Begrenzung der maximalen Breite */
+  padding: 0 30px; /* Ein bisschen Padding, um den Inhalt abzusetzen */
+}
+
+.header-logo img {
+  height: 30px;
+}
+
+.header-nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Erhöht den Abstand zwischen den Buttons */
+}
+
+.header-button {
+  font-size: 16px; /* Größere Schriftgröße für die Buttons */
+  padding: 10px 20px; /* Größere Buttons durch mehr Padding */
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.3s ease, color 0.3s ease; /* Sanfter Übergang nur für Farben */
+}
+
+.header-button.primary {
+  background-color: #1a73e8;
+  color: white;
+}
+
+.header-button.primary:hover {
+  background-color: #155cb0; /* Dunklere Farbe beim Hover */
+}
+
+.header-button.secondary {
+  background-color: transparent;
+  color: #1a73e8;
+  border: 1px solid #dadce0;
+  margin-right: 10px;
+}
+
+.header-button.secondary:hover {
+  background-color: #f0f0f0; /* Leicht grauer Hintergrund beim Hover */
+  color: #155cb0; /* Ändert die Textfarbe beim Hover */
+}
+
+.header-button.secondary:after {
+  content: "▼";
+  font-size: 10px;
+  margin-left: 5px;
+}
+
+
+/* index */
+/* Container for the entire page */
+.page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Main content wrapper */
+.content-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* Stack on smaller screens */
+  gap: 20px;
+  width: 100%;
+}
+
+/* Text section styling */
+.content-text {
+  flex: 1; /* Text takes up 50% of available width */
+  max-width: 500px;
+  .content-text h1 {
+    hyphens: auto; /* Automatische Silbentrennung */
+    word-break: break-word; /* Bricht lange Wörter */
+    align-items: right;
+  }
+  
+}
+
+.content-text h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  hyphens: auto; /* Automatische Silbentrennung */
+  word-break: break-word; /* Bricht lange Wörter */
+  text-align: left; /* Überschrift nach links ausgerichtet */
+}
+
+.content-text p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* Buttons group styling */
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+/* Image section styling */
+.content-image {
+  flex: 1; /* Image takes up 50% of available width */
+  text-align: right; /* Aligns the image to the right */
+}
+
+.bg-image {
+  max-width: 100%; /* Image resizes to fit its container */
+  height: auto;
+  border-radius: 10px;
+}
+
+.drive-logo {
+  max-width: 200px;
+  margin-bottom: 20px;
+}
+
+/* Button Styling */
+.button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  text-align: center;
+}
+
+.button.primary {
+  background-color: #1a73e8;
+  color: white;
+}
+
+.button.secondary {
+  background-color: white;
+  color: #4285f4;
+  border: 1px solid #5f6368;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .content-wrapper {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .content-text {
+    text-align: center;
+    max-width: 100%;
+  }
+
+  .content-image {
+    text-align: center;
+  }
+
+  .bg-image {
+    margin-top: 20px;
+  }
+}
