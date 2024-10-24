@@ -3,7 +3,8 @@ const multer = require('multer');
 const { PrismaClient } = require('@prisma/client');
 const path = require('path');
 const session = require('express-session');
-const fs = require('fs');  // Für das Löschen von Dateien
+const bcrypt = require('bcryptjs');
+const fs = require('fs'); // Für das Löschen von Dateien
 const prisma = new PrismaClient();
 
 const app = express();
@@ -45,16 +46,25 @@ function requireLogin(req, res, next) {
   }
 }
 
-// Route to render home page
-app.get('/', async (req, res) => {
-  if (!req.session.userId) {
-    res.render('index', { files: [], message: 'You are not logged in. Please log in to upload or view files.', session: req.session });
-  } else {
-    const files = await prisma.file.findMany({
-      where: { userId: req.session.userId }
-    });
-    res.render('index', { files, message: null, session: req.session });
+// Middleware to restrict access to index page for logged-in users
+function restrictIndex(req, res, next) {
+  if (req.session.userId) {
+    return res.redirect('/file-upload'); // Redirect to file upload if logged in
   }
+  next();
+}
+
+// Route to render home page (only if logged out)
+app.get('/', restrictIndex, (req, res) => {
+  res.render('index', { session: req.session });
+});
+
+// Route for file upload page (only if logged in)
+app.get('/file-upload', requireLogin, async (req, res) => {
+  const files = await prisma.file.findMany({
+    where: { userId: req.session.userId }
+  });
+  res.render('file-upload', { files, session: req.session });
 });
 
 // Route to handle file uploads
@@ -75,7 +85,7 @@ app.post('/upload', requireLogin, upload.single('file'), async (req, res) => {
     }
   });
 
-  res.redirect('/');
+  res.redirect('/file-upload');
 });
 
 // Route to handle file renaming
@@ -102,7 +112,7 @@ app.post('/rename/:id', requireLogin, async (req, res) => {
     }
   });
 
-  res.redirect('/');
+  res.redirect('/file-upload');
 });
 
 // Route to handle file deletion
@@ -122,7 +132,7 @@ app.post('/delete/:id', requireLogin, async (req, res) => {
     where: { id: fileId }
   });
 
-  res.redirect('/');
+  res.redirect('/file-upload');
 });
 
 // Route to download files
@@ -154,7 +164,7 @@ app.get('/profile', requireLogin, async (req, res) => {
 });
 
 // Route to change the password
-app.post('/change-password', requireLogin, async (req, res) => {
+app.post('/profile/change-password', requireLogin, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   const userId = req.session.userId;
 
@@ -162,14 +172,18 @@ app.post('/change-password', requireLogin, async (req, res) => {
     where: { id: userId }
   });
 
-  if (user.password !== currentPassword) {
+  const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+
+  if (!passwordMatch) {
     return res.status(400).send('Das aktuelle Passwort ist nicht korrekt.');
   }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
 
   await prisma.user.update({
     where: { id: userId },
     data: {
-      password: newPassword
+      password: hashedPassword
     }
   });
 
@@ -222,12 +236,18 @@ app.post('/login', async (req, res) => {
     where: { email }
   });
 
-  if (!user || user.password !== password) {
+  if (!user) {
+    return res.status(400).send('Invalid credentials.');
+  }
+
+  const passwordMatch = await bcrypt.compare(password, user.password);
+
+  if (!passwordMatch) {
     return res.status(400).send('Invalid credentials.');
   }
 
   req.session.userId = user.id;
-  res.redirect('/');
+  res.redirect('/file-upload'); // Redirect to file upload page after login
 });
 
 // Sign-up route
@@ -246,16 +266,18 @@ app.post('/sign-up', async (req, res) => {
     return res.status(400).send('User with this email already exists.');
   }
 
+  const hashedPassword = await bcrypt.hash(password, 10);
+
   const user = await prisma.user.create({
     data: {
       email,
-      password,
+      password: hashedPassword,
       name
     }
   });
 
   req.session.userId = user.id;
-  res.redirect('/');
+  res.redirect('/file-upload'); // Redirect to file upload after sign-up
 });
 
 // Logout route

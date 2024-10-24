@@ -5,20 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Google Drive</title>
     <link rel="stylesheet" href="/pico.classless.min.css" />
-    <link rel="stylesheet" href="/styles.css" /> <!-- Global -->
+    <link rel="stylesheet" href="/styles.css" />
+    <!-- Global -->
   </head>
   <body>
     <div class="container">
       <header>
         <div class="navbar">
           <% if (!session.userId) { %>
-            <a href="/login">Login</a>
-            <a href="/sign-up">Sign Up</a>
+          <a href="/login">Anmelden</a>
+          <a href="/sign-up">Konto erstellen</a>
           <% } else { %>
-            <a href="/profile">Profil</a>
-            <form action="/logout" method="POST" style="display: inline;">
-              <a href="#" onclick="this.closest('form').submit()">Logout</a>
-            </form>
+          <a href="/profile">Profil</a>
+          <form action="/logout" method="POST" style="display: inline">
+            <a href="#" onclick="this.closest('form').submit()">Logout</a>
+          </form>
           <% } %>
         </div>
 
@@ -27,11 +28,27 @@
           <div class="text-section">
             <img src="/drivelogo.svg" alt="Google Logo" class="logo" />
             <h1>Cloud-Speicher leicht gemacht</h1>
-            <p>Einfacher und skalierbarer Cloud-Speicher für Einzelpersonen und Teams aller Größen. Gespeicherte Dateien lassen sich auf jedem Gerät hochladen, öffnen, freigeben und bearbeiten.</p>
+            <p>
+              Einfacher und skalierbarer Cloud-Speicher für Einzelpersonen und
+              Teams aller Größen. Gespeicherte Dateien lassen sich auf jedem
+              Gerät hochladen, öffnen, freigeben und bearbeiten.
+            </p>
             <!-- Anmelde und Sign-up Buttons -->
-            <div style="display: flex; gap: 10px;">
-              <a href="/login" role="button" class="button primary">Anmelden</a> <!-- Blauer Button -->
-              <a href="/sign-up" role="button" class="button" style="background-color: white; color: #4285f4; border: 1px solid #5F6368;">Sign Up</a> <!-- Weißer Button -->
+            <div style="display: flex; gap: 10px">
+              <a href="/login" role="button" class="button primary">Anmelden</a>
+              <!-- Blauer Button -->
+              <a
+                href="/sign-up"
+                role="button"
+                class="button"
+                style="
+                  background-color: white;
+                  color: #4285f4;
+                  border: 1px solid #5f6368;
+                "
+                >Konto erstellen</a
+              >
+              <!-- Weißer Button -->
             </div>
           </div>
 
@@ -44,42 +61,59 @@
 
       <!-- File upload form (only shown if logged in) -->
       <% if (session.userId) { %>
-        <form action="/upload" method="POST" enctype="multipart/form-data">
-          <input type="file" name="file" required />
-          <button type="submit">Upload</button>
-        </form>
+      <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" required />
+        <button type="submit">Upload</button>
+      </form>
 
-        <!-- Display uploaded files (only shown if logged in) -->
-        <h2>Uploaded Files</h2>
-        <ul>
-          <% files.forEach(function(file) { %>
-          <li class="file-item">
-            <strong><%= file.filename %></strong> (<%= file.mimetype %>)
-            <button onclick="toggleDetails(this)">Details anzeigen</button> <!-- Button to toggle details -->
-            <div class="file-details" style="display: none;">
-              <form action="/rename/<%= file.id %>" method="POST">
-                <label for="newName-<%= file.id %>">Umbenennen:</label>
-                <input type="text" id="newName-<%= file.id %>" name="newName" placeholder="Neuer Dateiname" required />
-                <button type="submit">Umbenennen</button>
-              </form>
-              
-              <form action="/delete/<%= file.id %>" method="POST" onsubmit="return confirm('Sind Sie sicher, dass Sie diese Datei löschen möchten?');">
-                <button type="submit" class="delete-btn">Löschen</button>
-              </form>
+      <!-- Display uploaded files (only shown if logged in) -->
+      <h2>Uploaded Files</h2>
+      <ul>
+        <% files.forEach(function(file) { %>
+        <li class="file-item">
+          <strong><%= file.filename %></strong> (<%= file.mimetype %>)
+          <button onclick="toggleDetails(this)">Details anzeigen</button>
+          <!-- Button to toggle details -->
+          <div class="file-details" style="display: none">
+            <form action="/rename/<%= file.id %>" method="POST">
+              <label for="newName-<%= file.id %>">Umbenennen:</label>
+              <input
+                type="text"
+                id="newName-<%= file.id %>"
+                name="newName"
+                placeholder="Neuer Dateiname"
+                required
+              />
+              <button type="submit">Umbenennen</button>
+            </form>
 
-              <a href="/download/<%= file.id %>" class="download-link">Download</a>
-            </div>
-          </li>
-          <% }); %>
-        </ul>
+            <form
+              action="/delete/<%= file.id %>"
+              method="POST"
+              onsubmit="return confirm('Sind Sie sicher, dass Sie diese Datei löschen möchten?');"
+            >
+              <button type="submit" class="delete-btn">Löschen</button>
+            </form>
+
+            <a href="/download/<%= file.id %>" class="download-link"
+              >Download</a
+            >
+          </div>
+        </li>
+        <% }); %>
+      </ul>
       <% } %>
     </div>
 
     <script>
       function toggleDetails(button) {
         const details = button.nextElementSibling;
-        details.style.display = details.style.display === "none" ? "block" : "none";
-        button.textContent = details.style.display === "none" ? "Details anzeigen" : "Details verbergen";
+        details.style.display =
+          details.style.display === "none" ? "block" : "none";
+        button.textContent =
+          details.style.display === "none"
+            ? "Details anzeigen"
+            : "Details verbergen";
       }
     </script>
   </body>

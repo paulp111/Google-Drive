@@ -34,16 +34,17 @@
 
       <section>
         <h2>Passwort ändern</h2>
-        <form action="/change-password" method="POST">
+        <form action="/profile/change-password" method="POST">
           <label for="currentPassword">Aktuelles Passwort:</label>
           <input type="password" id="currentPassword" name="currentPassword" required />
-
+      
           <label for="newPassword">Neues Passwort:</label>
           <input type="password" id="newPassword" name="newPassword" required />
-
+      
           <button type="submit">Passwort ändern</button>
         </form>
       </section>
+      
 
       <section>
         <h2>Konto löschen</h2>
